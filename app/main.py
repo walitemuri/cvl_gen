@@ -1,11 +1,15 @@
 from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 import openai
 import dotenv
+from . import models
+from .database import engine
+from app.schemas import GPTRequest, GPTResponse
 
+models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 origins = ["*"]
 
@@ -19,12 +23,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class GPTRequest(BaseModel):
-    prompt: str
-    max_tokens: Optional[int] = 1500
-    n: Optional[int] = 1
-    stop: Optional[str] = None
-    temperature: Optional[float] = 1.0
 
 @app.get("/")
 def read_root():
@@ -32,7 +30,7 @@ def read_root():
 
 openai.api_key = config['OPENAI_API_KEY']
 
-@app.post("/generate")
+@app.post("/generate", status_code=status.HTTP_200_OK, response_model=GPTResponse)
 async def generate_text(gpt_request: GPTRequest):
     try:
         response = openai.Completion.create(
@@ -45,8 +43,9 @@ async def generate_text(gpt_request: GPTRequest):
         )
 
         if response:
-            return {"choices": response.choices}
+            text = response.choices[0].text
+            return GPTResponse(response=text)
         else:
-            return {"error": "Error making request to GPT API."}
+            raise HTTPException(status_code=400, detail="Error making request to GPT API.")
     except Exception as e:
-        return {"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))

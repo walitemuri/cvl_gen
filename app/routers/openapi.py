@@ -1,9 +1,10 @@
 
 
-from fastapi import APIRouter, HTTPException, status, FastAPI
+from fastapi import APIRouter, Depends, HTTPException, status, FastAPI
 import openai
 import dotenv
 from app.schemas import GPTRequest, GPTResponse
+from .. import oauth2
 
 config = dotenv.dotenv_values(".env")
 openai.api_key = config['OPENAI_API_KEY']
@@ -12,7 +13,7 @@ router = APIRouter(tags=["OpenAI API Requests"])
 
 
 @router.post("/generate", status_code=status.HTTP_200_OK, response_model=GPTResponse)
-async def generate_cvl(gpt_request: GPTRequest):
+async def generate_cvl(gpt_request: GPTRequest, current_user: int = Depends(oauth2.get_current_user)):
     try:
         response = openai.Completion.create(
             engine="text-davinci-003",

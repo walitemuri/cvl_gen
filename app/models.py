@@ -13,7 +13,8 @@ class User(Base):
     last_name = Column(String, nullable=False)
     password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text(("now()")))
-
+    __table_args__  = (UniqueConstraint("email", name="unique_email"),)
+    
 class Resume(Base):
     __tablename__ = "resume"
     

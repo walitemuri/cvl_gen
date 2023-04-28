@@ -11,7 +11,7 @@ import dotenv
 from . import models
 from .database import engine
 from app.schemas import GPTRequest, GPTResponse
-from .routers import openapi, resume, user
+from .routers import openapi, resume, user, auth
 models.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 origins = ["*"]
@@ -29,6 +29,7 @@ app.add_middleware(
 app.include_router(openapi.router)
 app.include_router(resume.router)
 app.include_router(user.router)
+app.include_router(auth.router)
 
 @app.get("/")
 def read_root():

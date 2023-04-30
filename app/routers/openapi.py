@@ -3,7 +3,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status, FastAPI
 import openai
 import dotenv
-from app.schemas import GPTRequest, GPTResponse
+from app.schemas import GPTRequest, GPTResponse, Content
 from .. import oauth2
 
 config = dotenv.dotenv_values(".env")
@@ -26,9 +26,23 @@ async def generate_cvl(gpt_request: GPTRequest, current_user: int = Depends(oaut
 
         if response:
             text = response.choices[0].text
-            return GPTResponse(response=text)
+            return GPTResponse(content=Content(response=text))
         else:
             raise HTTPException(status_code=400, detail="Error making request to GPT API.")
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+
+
+letter_format = f"""
+Limit the output to 3 concise paragraphs:
+
+Dear [Recipient's Name],
+
+[Opening paragraph: Introduce yourself and express interest in the position]
+
+[Body: Explain your skills and experiences relevant to the job]
+
+[Closing paragraph: Reiterate your interest and provide contact information]
+
+"""

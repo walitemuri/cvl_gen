@@ -23,7 +23,10 @@ def get_resume(id: int , current_user: int = Depends(oauth2.get_current_user), d
 
 @router.get("/", response_model=schemas.ResumeRequest)
 def get_user_resume(current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
-    return db.query(models.Resume).filter(models.Resume.id == current_user.resume_id).first()
+    user_resume = db.query(models.Resume).filter(models.Resume.id == current_user.resume_id).first()
+    if not user_resume:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {current_user.id} has no resume.")
+    return user_resume
 
 @router.post("/", response_model=schemas.ResumeOut)
 async def create_user_resume(file: UploadFile = File(None), current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):

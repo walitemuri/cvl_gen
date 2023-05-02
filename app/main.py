@@ -34,18 +34,3 @@ app.include_router(auth.router)
 @app.get("/")
 def read_root():
     return {"Hello World!"}
-
-
-
-# @app.post("/upload/resume/")
-# async def upload_resume(file: UploadFile = File(...)):
-#     temp_folder = Path("temp_files")
-#     temp_folder.mkdir(exist_ok=True)
-#     temp_file_path = temp_folder / file.filename
-#     with temp_file_path.open("wb") as buffer:
-#         shutil.coptfileobj(file.file, buffer)
-    
-#     with open(temp_file_path, "r") as f:
-#         content = f.read()
-#     os.remove(temp_file_path)
-#     resume = models.Resume(resume_)

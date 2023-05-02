@@ -11,22 +11,22 @@ router = APIRouter(tags=["Resume Requests"],
                    prefix="/resume")
 
 
-# Get Resume by ID
+#Get Resume by ID
 @router.get("/{id}", response_model=schemas.ResumeOut)
-def get_user_resume(user_id: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
-    user_resume = db.query(models.Resume).filter(models.Resume.resume_id == id).first()
+def get_resume(id: int , current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    user_resume = db.query(models.Resume).filter(models.Resume.id == id).first()
     if not user_resume:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Resume {id} not found."
         )
     return user_resume
 
+@router.get("/", response_model=schemas.ResumeRequest)
+def get_user_resume(current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    return db.query(models.Resume).filter(models.Resume.id == current_user.resume_id).first()
+
 @router.post("/", response_model=schemas.ResumeOut)
-async def create_user_resume(
-    file: UploadFile = File(None),
-    current_user: int = Depends(oauth2.get_current_user),
-    db: Session = Depends(get_db),
-):
+async def create_user_resume(file: UploadFile = File(None), current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
     if not file:
         raise HTTPException(
             status_code=status.HTTP_204_NO_CONTENT, detail=f"No file."
@@ -40,10 +40,12 @@ async def create_user_resume(
     content = ""
     for page in range(len(pdf_reader.pages)):
         content += pdf_reader.pages[page].extract_text()
-    new_resume = models.Resume(resume_string=content, user_id=current_user.id)
+    new_resume = models.Resume(resume_string=content)
     db.add(new_resume)
     db.commit()
     db.refresh(new_resume)
+    current_user.resume_id = new_resume.id
+    db.commit()
     return new_resume
 
 

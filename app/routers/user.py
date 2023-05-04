@@ -6,11 +6,20 @@ from .. database import get_db
 router = APIRouter(tags=["User Requests"],
                    prefix="/users")
 
+# Function to check if the requesting user is an admin
+def check_admin(current_user: schemas.User = Depends(oauth2.get_current_user)):
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You do not have permission to create new admin users.",
+        )
+    return True
+
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=schemas.UserOut)
-def create_user(user: schemas.CreateUser, db: Session = Depends(get_db)):
+def create_user(user: schemas.CreateUser, db: Session = Depends(get_db), is_admin: bool = Depends(check_admin)):
     hashed_pwd = utils.hash_pwd(user.password)
     user.password = hashed_pwd
-    new_user = models.User(**user.dict())
+    new_user = models.User(**user.dict(), is_admin=user.is_admin)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)

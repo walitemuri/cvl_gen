@@ -38,7 +38,7 @@ async def create_user_resume(file: UploadFile = File(None), current_user: int = 
         )
     pdf_reader = PyPDF2.PdfReader(BytesIO(await file.read()))
     content = ""
-    for page in range(len(pdf_reader.pages)):
+    for page in range(pdf_reader.getNumPages()):
         content += pdf_reader.pages[page].extract_text()
     new_resume = models.Resume(resume_string=content)
     db.add(new_resume)

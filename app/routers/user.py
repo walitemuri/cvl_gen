@@ -10,7 +10,7 @@ router = APIRouter(tags=["User Requests"],
 def create_user(user: schemas.CreateUser, db: Session = Depends(get_db)):
     hashed_pwd = utils.hash_pwd(user.password)
     user.password = hashed_pwd
-    new_user = models.User(**user.dict())
+    new_user = models.User(**user.dict(), role_id=schemas.Role().id)
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
@@ -19,6 +19,8 @@ def create_user(user: schemas.CreateUser, db: Session = Depends(get_db)):
 
 @router.get("/{id}", response_model=schemas.UserOut)
 def get_user(id: int, db: Session = Depends(get_db)):
+    if db.query(models.User).count() > 15:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User limit exceeded.")
     user = db.query(models.User).filter(models.User.id == id).first()
     if not user:
         raise HTTPException(

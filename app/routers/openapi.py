@@ -34,7 +34,7 @@ def update_user_access(user_id: int, db: Session):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Usage limit reached.")
     
 @router.post("/generate", status_code=status.HTTP_201_CREATED, response_model=GPTResponse)
-async def generate_cvl(gpt_request: GPTRequest = Depends(), current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(database.get_db)):
+async def generate_cvl(gpt_request: GPTRequest, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(database.get_db)):
     resume = db.query(models.Resume).filter(models.Resume.id == current_user.id).first()
     update_user_access(current_user.id, db)
     try:

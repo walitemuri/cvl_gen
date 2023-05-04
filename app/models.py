@@ -14,7 +14,8 @@ class User(Base):
     password = Column(String, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
     is_verified = Column(Boolean, default=False)
-    resume_id = Column(Integer, ForeignKey('resume.id'), unique=True)
+    role_id = Column(Integer, ForeignKey('roles.id'), nullable=False)
+    resume_id = Column(Integer, ForeignKey('resume.id', ondelete="SET NULL"), nullable=True)
 
 class UserAccess(Base):
     __tablename__ = "user_access"
@@ -28,3 +29,9 @@ class Resume(Base):
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     resume_string = Column(Text, nullable=False)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
+
+class Role(Base):
+    __tablename__ = "roles"
+    
+    id = Column(Integer, primary_key=True, index=True, nullable=False)
+    name = Column(String, nullable=False, unique=True)

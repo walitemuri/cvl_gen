@@ -19,17 +19,15 @@ def get_resume(id: int , current_user: int = Depends(oauth2.get_current_user), d
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail=f"Resume {id} not found."
         )
+    if current_user.resume_id != user_resume.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to resume.")
     return user_resume
 
-@router.get("/", response_model=schemas.ResumeRequest)
-def get_user_resume(current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
-    user_resume = db.query(models.Resume).filter(models.Resume.id == current_user.resume_id).first()
-    if not user_resume:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"User {current_user.id} has no resume.")
-    return user_resume
 
 @router.post("/", response_model=schemas.ResumeOut)
 async def create_user_resume(file: UploadFile = File(None), current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    if current_user.resume_id != None:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Only one resume per user at a time.")
     if not file:
         raise HTTPException(
             status_code=status.HTTP_204_NO_CONTENT, detail=f"No file."
@@ -51,7 +49,14 @@ async def create_user_resume(file: UploadFile = File(None), current_user: int = 
     db.commit()
     return new_resume
 
-
-
-
-
+@router.delete("/{id}")
+def delete_resume(id: int, current_user: int = Depends(oauth2.get_current_user), db: Session = Depends(get_db)):
+    query = db.query(models.Resume).filter(models.Resume.id == id)
+    deleted_resume = query.first()
+    if not deleted_resume:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Resume {id} not found.")
+    if current_user.resume_id != deleted_resume.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail=f"Not authorized to delete.")
+    query.delete(synchronize_session=False)
+    db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

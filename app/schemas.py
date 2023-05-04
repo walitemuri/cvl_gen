@@ -82,3 +82,7 @@ class ResumeRequest(BaseModel):
 
     class Config:
         orm_mode = True
+
+class Role(BaseModel):
+    id: int = 1
+    name: str = "user"

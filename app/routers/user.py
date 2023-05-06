@@ -20,6 +20,7 @@ def create_user(user: schemas.CreateUser, db: Session = Depends(get_db), is_admi
     hashed_pwd = utils.hash_pwd(user.password)
     user.password = hashed_pwd
     new_user = models.User(**user.dict(), is_admin=user.is_admin)
+               #role_id=schemas.Role().id
     db.add(new_user)
     db.commit()
     db.refresh(new_user)

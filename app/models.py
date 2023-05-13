@@ -1,8 +1,7 @@
-from sqlalchemy import Column, DateTime, Integer, String, ForeignKey, Text, Boolean
+from sqlalchemy import Column, DateTime, Integer, LargeBinary, String, ForeignKey, Text, Boolean
 from sqlalchemy.sql.sqltypes import TIMESTAMP
 from sqlalchemy.sql.expression import text
 from .database import Base
-from datetime import datetime, time
 
 class User(Base):
     __tablename__ = "users"
@@ -28,6 +27,7 @@ class Resume(Base):
     
     id = Column(Integer, primary_key=True, index=True, nullable=False)
     resume_string = Column(Text, nullable=False)
+    resume_file = Column(LargeBinary)
     created_at = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text("now()"))
 
 class Role(Base):

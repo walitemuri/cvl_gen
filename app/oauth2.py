@@ -11,12 +11,17 @@ SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
 ACCESS_TOKEN_EXPIRE = settings.access_token_expire_minutes
 
-def create_access_token(data: dict):
+def create_access_token(expires_delta: timedelta = None, **data):
     to_encode = data.copy()
-    expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE)
+    if expires_delta:
+        expire = datetime.utcnow() + expires_delta
+    else:
+        expire = datetime.utcnow() + timedelta(minutes=ACCESS_TOKEN_EXPIRE)
     to_encode.update({"exp": expire})
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
+
+
 
 def verify_access_token(token: str, credentials_exception):
     try:

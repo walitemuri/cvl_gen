@@ -1,10 +1,8 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Header, Response, status
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 from .. import oauth2
-from app.config import settings
 from .. import database, models, schemas, utils, oauth2
 from sqlalchemy.orm import Session
-from jose import jwt, JWTError
 router = APIRouter(tags=["Authentication Requests"])
 
 
@@ -17,7 +15,7 @@ def login_user(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Sess
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credentials")
     if not utils.verify_pwd(user_credentials.password, user.password):
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid Credentials")
-    access_token = oauth2.create_access_token(data={"user_id": user.id})
+    access_token = oauth2.create_access_token(user_id=user.id)
     return {"access_token": access_token, "token_type": "bearer"}
 
 # @router.post("/verify-email", response_model=schemas.UserOut)
@@ -38,3 +36,16 @@ def login_user(user_credentials: OAuth2PasswordRequestForm = Depends(), db: Sess
 #         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Verification token expired.")
 #     except jwt.InvalidTokenError:
 #         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid verification token.")
+
+@router.post("/login/token/verify/", status_code=status.HTTP_202_ACCEPTED)
+async def verify_token(authorization: str = Header(None)):
+    token = authorization.split(' ')[1] if authorization else None
+
+    if not token:
+        return {"valid": False}
+
+    try:
+        oauth2.verify_access_token(token, HTTPException(status_code = status.HTTP_401_UNAUTHORIZED))
+        return {"valid": True}
+    except HTTPException:
+        return {"valid": False}

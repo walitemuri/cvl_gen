@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cvl-gen-api-deployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: cvl-gen-api
+  template:
+    metadata:
+      labels:
+        app: cvl-gen-api
+    spec:
+      containers:
+        - name: cvl-gen-api
+          image: wtemuri/cvl-gen-api-image:v2.2
+          ports:
+            - containerPort: 8000
+          envFrom:
+            - secretRef:
+                name: postgres-credentials
+          env:
+            - name: OPENAI_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: OPEN_API_KEY
+            - name: POSTGRES_USER
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: DATABASE_USERNAME
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: DATABASE_PASSWORD
+            - name: POSTGRES_HOST
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: DATABASE_HOSTNAME
+            - name: POSTGRES_PORT
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: DATABASE_PORT
+            - name: POSTGRES_DB
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: DATABASE_NAME
+            - name: SECRET_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: SECRET_KEY
+            - name: ALGORITHM
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: ALGORITHM
+            - name: ACCESS_TOKEN_EXPIRE_MINUTES
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: ACCESS_TOKEN_EXPIRE_MINUTES

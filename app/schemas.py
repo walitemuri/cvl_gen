@@ -1,5 +1,5 @@
 from typing import List, Optional
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel, EmailStr, Field
 from fastapi import UploadFile
 
 
@@ -8,10 +8,10 @@ class Content(BaseModel):
 
 
 class GPTRequest(BaseModel):
-    max_tokens: Optional[int] = 2500
+    max_tokens: Optional[int] = 400
     n: Optional[int] = 1
     stop: Optional[str] = None
-    temperature: Optional[float] = 1.0
+    temperature: Optional[float] = 0.1
 
 
 
@@ -65,8 +65,14 @@ class UserOut(BaseModel):
     class Config:
         orm_mode = True
 
+class ResumeOutOne(BaseModel):
+    id: int
+    
+    class Config:
+        orm_mode = True
 
 class ResumeOut(BaseModel):
+    resume_file: str = Field(..., description="The base64-encoded binary file to upload")
     id: int
 
     class Config:
@@ -75,7 +81,7 @@ class ResumeOut(BaseModel):
 
 class CreateResume(BaseModel):
     resume_string: str
-
+    resume_file: UploadFile
 
 class ResumeRequest(BaseModel):
     resume_string: str
@@ -86,3 +92,8 @@ class ResumeRequest(BaseModel):
 class Role(BaseModel):
     id: int = 1
     name: str = "user"
+
+class CoverLetterForm(BaseModel):
+    sending_address: str
+    recieve_address: str
+    job_description: str

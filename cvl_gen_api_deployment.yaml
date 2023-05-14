@@ -66,3 +66,8 @@ spec:
                 secretKeyRef:
                   name: postgres-credentials
                   key: ACCESS_TOKEN_EXPIRE_MINUTES
+            - name: SSL_MODE
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-credentials
+                  key: SSL_MODE

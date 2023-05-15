@@ -6,4 +6,7 @@ API to handle requests from the LetterTailor Application. Integrated with user a
 ## Releases
 
 v1.0 - CrimsonByte
-Full Documentation: api.walitemuri.com/crimsonbyte/v1/docs
+
+Full Documentation: 
+https://api.walitemuri.com/crimsonbyte/v1/docs#/
+
